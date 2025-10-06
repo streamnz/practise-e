@@ -1,5 +1,8 @@
 package com.streamnz.practisee.exceptions;
 
+import lombok.ToString;
+
+@ToString
 public class OutageMaxRetryException extends RuntimeException {
 
     private String errorMessage = "Maximum retry attempts exceeded.";

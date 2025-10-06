@@ -2,6 +2,7 @@ package com.streamnz.practisee.service.handler;
 
 import com.streamnz.practisee.model.dto.OutageEvent;
 import com.streamnz.practisee.service.OutageService;
+import com.streamnz.practisee.service.handler.listeners.OutageEventListenerRegister;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,8 @@ import org.springframework.stereotype.Component;
 @OutageHandlerType("EMS")
 public class EMSHandler extends OutageHandleTemplate{
 
-
-    protected EMSHandler(OutageService outageService) {
-        super(outageService);
+    protected EMSHandler(OutageService outageService, OutageEventListenerRegister listenerRegister) {
+        super(outageService, listenerRegister);
     }
 
     @Override
@@ -34,8 +34,4 @@ public class EMSHandler extends OutageHandleTemplate{
 
     }
 
-    @Override
-    protected void notifyStakeholders(OutageEvent event) {
-
-    }
 }

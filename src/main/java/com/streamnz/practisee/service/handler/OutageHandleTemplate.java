@@ -2,7 +2,7 @@ package com.streamnz.practisee.service.handler;
 
 import com.streamnz.practisee.model.dto.OutageEvent;
 import com.streamnz.practisee.service.OutageService;
-import com.sun.nio.sctp.HandlerResult;
+import com.streamnz.practisee.service.handler.listeners.OutageEventListenerRegister;
 
 
 /**
@@ -13,8 +13,11 @@ public abstract class OutageHandleTemplate implements OutageHandler {
 
     private final OutageService outageService;
 
-    protected OutageHandleTemplate(OutageService outageService) {
+    private final OutageEventListenerRegister listenerRegister;
+
+    protected OutageHandleTemplate(OutageService outageService, OutageEventListenerRegister listenerRegister) {
         this.outageService = outageService;
+        this.listenerRegister = listenerRegister;
     }
 
     @Override
@@ -27,11 +30,25 @@ public abstract class OutageHandleTemplate implements OutageHandler {
     }
 
     protected abstract void checkValidation(OutageEvent event);
+
     protected abstract void normalize(OutageEvent event);
+
     protected abstract void calculatePriority(OutageEvent event);
-    protected abstract void notifyStakeholders(OutageEvent event);
+
+    /**
+     * Notify all registered listeners about the outage event
+     *
+     * @param event
+     */
+    protected void notifyStakeholders(OutageEvent event) {
+        listenerRegister.publishEvent(event);
+    }
 
 
+    /**
+     * Persist the outage event to the database
+     * @param event
+     */
     protected void saveToDatabase(OutageEvent event) {
         System.out.println("Saving event to database: " + event);
         outageService.saveEvent(event);

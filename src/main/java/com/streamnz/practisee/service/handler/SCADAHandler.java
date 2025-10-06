@@ -2,6 +2,7 @@ package com.streamnz.practisee.service.handler;
 
 import com.streamnz.practisee.model.dto.OutageEvent;
 import com.streamnz.practisee.service.OutageService;
+import com.streamnz.practisee.service.handler.listeners.OutageEventListenerRegister;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +13,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @OutageHandlerType("SCADA")
-public class SCADAHandler extends OutageHandleTemplate{
+public class SCADAHandler extends OutageHandleTemplate {
 
 
-    protected SCADAHandler(OutageService outageService) {
-        super(outageService);
+    protected SCADAHandler(OutageService outageService, OutageEventListenerRegister listenerRegister) {
+        super(outageService, listenerRegister);
     }
 
     @Override
@@ -35,8 +36,4 @@ public class SCADAHandler extends OutageHandleTemplate{
         log.info("SCADAHandler: Calculating priority for event - " + event);
     }
 
-    @Override
-    protected void notifyStakeholders(OutageEvent event) {
-        log.info("SCADAHandler: Notifying stakeholders for event - " + event);
-    }
 }
