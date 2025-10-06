@@ -1,31 +1,29 @@
 package com.streamnz.practisee.service.handler.decorator;
 
-import com.streamnz.practisee.config.DecoratorConfig;
 import com.streamnz.practisee.exceptions.OutageMaxRetryException;
-import com.streamnz.practisee.exceptions.OutageProcessingException;
 import com.streamnz.practisee.model.dto.OutageEvent;
 import com.streamnz.practisee.service.handler.OutageHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * @Author cheng hao
  * @Date 06/10/2025 20:30
  */
-@Component
 @Slf4j
 public class RetryDecorator extends OutageHandlerDecorator{
 
-    private DecoratorConfig decoratorConfig;
+    private int maxRetries;
 
-    public RetryDecorator(OutageHandler wrappedHandler, DecoratorConfig decoratorConfig) {
+    public RetryDecorator(OutageHandler wrappedHandler, int maxRetries) {
         super(wrappedHandler);
-        this.decoratorConfig = decoratorConfig;
+        if (maxRetries <= 0) {
+            throw new OutageMaxRetryException("Invalid MaxRetries Configuration",null); //
+        }
+        this.maxRetries  = maxRetries;
     }
 
     @Override
     public void handle(OutageEvent event) {
-        int maxRetries = decoratorConfig.getMaxRetries();
         int attempt = 0;
         while (attempt < maxRetries) {
             try {

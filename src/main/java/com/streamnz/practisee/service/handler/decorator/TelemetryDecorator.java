@@ -2,11 +2,8 @@ package com.streamnz.practisee.service.handler.decorator;
 
 import com.streamnz.practisee.exceptions.OutageTelemetryHandleException;
 import com.streamnz.practisee.model.dto.OutageEvent;
-import com.streamnz.practisee.service.OutageService;
-import com.streamnz.practisee.service.TelemetryService;
 import com.streamnz.practisee.service.handler.OutageHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,15 +12,12 @@ import java.time.Instant;
  * @Author cheng hao
  * @Date 06/10/2025 20:09
  */
-@Component
 @Slf4j
 public class TelemetryDecorator extends OutageHandlerDecorator{
 
-    private final TelemetryService telemetryService;
 
-    public TelemetryDecorator(OutageHandler deligate, TelemetryService telemetryService) {
+    public TelemetryDecorator(OutageHandler deligate) {
         super(deligate);
-        this.telemetryService = telemetryService;
     }
 
     @Override

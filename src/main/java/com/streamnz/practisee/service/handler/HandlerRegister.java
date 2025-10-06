@@ -1,5 +1,7 @@
 package com.streamnz.practisee.service.handler;
 
+import com.streamnz.practisee.service.handler.decorator.DecoratorFactory;
+import com.streamnz.practisee.service.handler.decorator.RetryDecorator;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -18,10 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class HandlerRegister implements ApplicationContextAware {
     private ApplicationContext applicationContext;
+    private DecoratorFactory decoratorFactory;
+    // Map to hold handlers by type
     private final Map<String, OutageHandler> handlerMap;
 
-    public HandlerRegister(ApplicationContext applicationContext) {
+    public HandlerRegister(DecoratorFactory decoratorFactory) {
         this.handlerMap = new ConcurrentHashMap<>();
+        this.decoratorFactory = decoratorFactory;
     }
 
     @Override
@@ -37,7 +42,9 @@ public class HandlerRegister implements ApplicationContextAware {
                 OutageHandlerType annotation = bean.getClass().getAnnotation(OutageHandlerType.class);
                 if (annotation != null) {
                     String type = annotation.value();
-                    handlerMap.put(type, handler);
+                    // Wrap the handler with decorators
+                    OutageHandler decorator = decoratorFactory.createDecorator(handler);
+                    handlerMap.put(type, decorator);
                     log.info("Registered handler for type: {}", type);
                 }
             }

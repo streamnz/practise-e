@@ -4,6 +4,7 @@ import com.streamnz.practisee.enums.SourceSystemEnum;
 import com.streamnz.practisee.model.dto.OutageEvent;
 import com.streamnz.practisee.service.OutageService;
 import com.streamnz.practisee.service.handler.SCADAHandler;
+import com.streamnz.practisee.service.handler.listeners.OutageEventListenerRegister;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ public class SCADAHandlerTest {
     @Mock
     private OutageService outageService;
 
+    @Mock
+    private OutageEventListenerRegister listenerRegister;
+
     @InjectMocks
     private SCADAHandler handler;
 
@@ -45,5 +49,7 @@ public class SCADAHandlerTest {
         // then
         verify(outageService).saveEvent(event);
     }
+
+
 
 }
