@@ -33,8 +33,8 @@ public class StreamNZLoginPage {
         String[] loginSelectors = {
             LOGIN_BUTTON_SELECTOR,
             "button:has-text('Login')",
-            ".login-btn",
-            "[data-testid='login-button']"
+            ".navbar-login-btn",
+            ".navbar-btn.navbar-login-btn"
         };
         
         for (String selector : loginSelectors) {
