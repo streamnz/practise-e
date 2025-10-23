@@ -54,4 +54,6 @@ public class HandlerRegister implements ApplicationContextAware {
         }
         return outageHandler;
     }
+
 }
+
