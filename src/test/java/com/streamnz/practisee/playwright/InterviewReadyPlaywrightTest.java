@@ -3,6 +3,7 @@ package com.streamnz.practisee.playwright;
 import com.microsoft.playwright.*;
 import com.streamnz.practisee.playwright.monitors.WebSocketMonitor;
 import com.streamnz.practisee.playwright.pages.StreamNZLoginPage;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @Author cheng hao
  * @Date 23/10/2025 10:05
  */
+@Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @DisplayName("StreamNZ Login and WebSocket Integration Tests")
 public class InterviewReadyPlaywrightTest {
@@ -77,94 +79,105 @@ public class InterviewReadyPlaywrightTest {
     @DisplayName("Should successfully login and establish WebSocket connection")
     void testLoginAndWebSocketConnection() {
         // Arrange
-        logTestStep("Starting login and WebSocket test");
+        log.info("Starting complete login and game flow test");
         
-        // Act - Navigate and login
+        // Act & Assert - Complete login flow
+        performLogin();
+        
+        // Act & Assert - Enter game and establish WebSocket
+        enterGameAndVerifyWebSocket();
+        
+        log.info("Complete test flow finished successfully");
+    }
+    
+    /**
+     * Perform login and verify success
+     */
+    private void performLogin() {
+        log.info("=== LOGIN PHASE ===");
+        
         loginPage.navigateToHomePage();
-        logTestStep("Navigated to home page: " + loginPage.getPageTitle());
+        log.info("Navigated to home page: {}", loginPage.getPageTitle());
         
         loginPage.openLoginModal();
-        logTestStep("Login modal opened");
+        log.info("Login modal opened");
         
         loginPage.fillCredentials(TEST_EMAIL, TEST_PASSWORD);
-        logTestStep("Credentials filled");
+        log.info("Credentials filled");
         
         loginPage.submitLogin();
-        logTestStep("Login form submitted");
+        log.info("Login form submitted");
         
-        // Wait for login completion and navigation
         loginPage.waitForLoginCompletion();
-        logTestStep("Login completion wait finished");
+        log.info("Login completion wait finished");
         
-        // Assert - Verify login success
+        // Assert login success
         boolean loginSuccessful = loginPage.isLoginSuccessful();
-        if (loginSuccessful) {
-            logTestStep("Login verification passed - current URL: " + loginPage.getCurrentUrl());
-            
-            // Now click Enter Game to establish WebSocket connection
-            logTestStep("Attempting to click Enter Game button...");
-            try {
-                loginPage.clickEnterGame();
-                logTestStep("Enter Game button clicked successfully");
-                
-                // Wait for game page to load
-                loginPage.waitForGamePageLoad();
-                logTestStep("Game page load completed");
-                
-                // Select "Play as White" to enter the game board
-                logTestStep("Selecting 'Play as White'...");
-                loginPage.selectPlayAsWhite();
-                logTestStep("Play as White selected successfully");
-                
-                // Wait for game board to load
-                loginPage.waitForGameBoard();
-                logTestStep("Game board loaded");
-                
-            } catch (Exception e) {
-                logTestStep("Failed to complete game setup: " + e.getMessage());
-                // Continue with WebSocket test anyway
-            }
-        } else {
-            logTestStep("Login verification failed");
-        }
+        assertTrue(loginSuccessful, "Login should be successful. Current URL: " + loginPage.getCurrentUrl());
+        log.info("Login verification passed");
+    }
+    
+    /**
+     * Enter game and verify WebSocket connection
+     */
+    private void enterGameAndVerifyWebSocket() {
+        log.info("=== GAME ENTRY PHASE ===");
         
-        // Act - Check WebSocket connection (should be established after clicking Enter Game)
-        logTestStep("Checking for WebSocket connection...");
+        // Enter game
+        loginPage.clickEnterGame();
+        log.info("Enter Game button clicked");
+        
+        loginPage.waitForGamePageLoad();
+        log.info("Game page loaded");
+        
+        // Select player color
+        loginPage.selectPlayAsWhite();
+        log.info("Play as White selected");
+        
+        loginPage.waitForGameBoard();
+        log.info("Game board loaded");
+        
+        // Verify WebSocket connection
+        verifyWebSocketConnection();
+    }
+    
+    /**
+     * Verify WebSocket connection and messages
+     */
+    private void verifyWebSocketConnection() {
+        log.info("=== WEBSOCKET VERIFICATION ===");
+        
         boolean websocketConnected = webSocketMonitor.waitForConnection(WEBSOCKET_TIMEOUT_MS);
         
-        // Assert - Verify WebSocket connection
         if (websocketConnected) {
-            logTestStep("WebSocket connection established");
+            log.info("WebSocket connection established");
             assertTrue(webSocketMonitor.isConnected(), "WebSocket should be connected");
             
-            // Wait for messages
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            // Wait for initial messages
+            page.waitForTimeout(2000);
             
             int messageCount = webSocketMonitor.getMessageCount();
-            logTestStep("WebSocket messages received: " + messageCount);
+            log.info("WebSocket messages received: {}", messageCount);
             
-            // Log all messages for debugging
+            // Log messages for debugging
             webSocketMonitor.getMessages().forEach(msg -> 
-                logTestStep("WebSocket message: " + msg)
+                log.info("WebSocket message: {}", msg)
             );
             
+            // Verify we received game-related messages
+            assertTrue(messageCount > 0, "Should receive at least one WebSocket message");
+            
         } else {
-            logTestStep("No WebSocket connection detected - this may be expected");
-            // Don't fail the test if WebSocket is not available
+            log.info("No WebSocket connection detected");
+            fail("WebSocket connection should be established");
         }
-        
-        logTestStep("Test completed successfully");
     }
 
     @Test
     @DisplayName("Should handle login failure gracefully")
     void testLoginFailureHandling() {
         // Arrange
-        logTestStep("Starting login failure test");
+        log.info("Starting login failure test");
         
         // Act
         loginPage.navigateToHomePage();
@@ -176,7 +189,7 @@ public class InterviewReadyPlaywrightTest {
         // In a real scenario, you would check for error messages
         // For now, we just verify the test doesn't crash
         assertNotNull(loginPage.getCurrentUrl(), "Should still be on a valid page");
-        logTestStep("Login failure handled gracefully");
+        log.info("Login failure handled gracefully");
     }
 
     @Test
@@ -190,13 +203,7 @@ public class InterviewReadyPlaywrightTest {
         assertTrue(loginPage.getCurrentUrl().contains("streamnz.com"), 
             "Should be on StreamNZ domain");
         
-        logTestStep("Page elements verification passed");
+        log.info("Page elements verification passed");
     }
 
-    /**
-     * Utility method for consistent test logging
-     */
-    private void logTestStep(String message) {
-        System.out.println("[TEST] " + message);
-    }
 }
