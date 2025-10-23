@@ -11,17 +11,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Interview-ready Playwright test demonstrating best practices:
- * 
- * 1. Page Object Model pattern
- * 2. Proper separation of concerns
- * 3. Clean test structure
- * 4. Comprehensive error handling
- * 5. Thread-safe implementation
- * 6. Good logging and debugging
- * 
- * This code would be impressive in a technical interview!
- * 
  * @Author cheng hao
  * @Date 23/10/2025 10:05
  */
@@ -152,9 +141,6 @@ public class InterviewReadyPlaywrightTest {
         if (websocketConnected) {
             log.info("WebSocket connection established");
             assertTrue(webSocketMonitor.isConnected(), "WebSocket should be connected");
-            
-            // Wait for initial messages - use WebSocket monitor's built-in waiting
-            // No need for additional timeout as WebSocketMonitor already handles waiting
             
             int messageCount = webSocketMonitor.getMessageCount();
             log.info("WebSocket messages received: {}", messageCount);
