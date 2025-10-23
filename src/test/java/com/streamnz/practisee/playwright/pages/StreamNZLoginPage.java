@@ -1,6 +1,7 @@
 package com.streamnz.practisee.playwright.pages;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.WaitForSelectorState;
 
 /**
@@ -23,7 +24,8 @@ public class StreamNZLoginPage {
      */
     public void navigateToHomePage() {
         page.navigate("https://streamnz.com");
-        page.waitForTimeout(2000); // Wait for page to load
+        // Wait for page to be ready
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
     }
     
     /**
@@ -70,8 +72,20 @@ public class StreamNZLoginPage {
      * Check if login was successful
      */
     public boolean isLoginSuccessful() {
-        page.waitForTimeout(2000);
-        return !page.url().contains("login");
+        // Wait for navigation to complete or login form to disappear
+        try {
+            page.waitForURL(url -> !url.contains("login"), new Page.WaitForURLOptions().setTimeout(5000));
+            return true;
+        } catch (Exception e) {
+            // If URL doesn't change, check if login form is no longer visible
+            try {
+                page.waitForSelector("input[placeholder='Enter your email']", 
+                    new Page.WaitForSelectorOptions().setState(WaitForSelectorState.DETACHED).setTimeout(3000));
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
+        }
     }
     
     /**
@@ -92,7 +106,14 @@ public class StreamNZLoginPage {
      * Wait for login to complete
      */
     public void waitForLoginCompletion() {
-        page.waitForTimeout(3000);
+        // Wait for either URL change or login form to disappear
+        try {
+            page.waitForURL(url -> !url.contains("login"), new Page.WaitForURLOptions().setTimeout(5000));
+        } catch (Exception e) {
+            // If URL doesn't change, wait for login form to disappear
+            page.waitForSelector("input[placeholder='Enter your email']", 
+                new Page.WaitForSelectorOptions().setState(WaitForSelectorState.DETACHED).setTimeout(3000));
+        }
     }
     
     
@@ -107,7 +128,14 @@ public class StreamNZLoginPage {
      * Wait for game page to load
      */
     public void waitForGamePageLoad() {
-        page.waitForTimeout(2000);
+        // Wait for game-related elements to appear
+        try {
+            page.waitForSelector("button:has-text('Play as White'), button:has-text('Play as Black')", 
+                new Page.WaitForSelectorOptions().setTimeout(5000));
+        } catch (Exception e) {
+            // Fallback: wait for page to be ready
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+        }
     }
     
     /**
@@ -128,6 +156,14 @@ public class StreamNZLoginPage {
      * Wait for game board to load
      */
     public void waitForGameBoard() {
-        page.waitForTimeout(3000);
+        // Wait for game board elements to appear
+        try {
+            // Look for game board or game-related elements
+            page.waitForSelector("[class*='board'], [class*='game'], [class*='grid']", 
+                new Page.WaitForSelectorOptions().setTimeout(5000));
+        } catch (Exception e) {
+            // Fallback: wait for page to be ready
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+        }
     }
 }

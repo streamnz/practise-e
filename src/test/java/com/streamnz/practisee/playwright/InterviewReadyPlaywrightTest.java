@@ -153,8 +153,8 @@ public class InterviewReadyPlaywrightTest {
             log.info("WebSocket connection established");
             assertTrue(webSocketMonitor.isConnected(), "WebSocket should be connected");
             
-            // Wait for initial messages
-            page.waitForTimeout(2000);
+            // Wait for initial messages - use WebSocket monitor's built-in waiting
+            // No need for additional timeout as WebSocketMonitor already handles waiting
             
             int messageCount = webSocketMonitor.getMessageCount();
             log.info("WebSocket messages received: {}", messageCount);
