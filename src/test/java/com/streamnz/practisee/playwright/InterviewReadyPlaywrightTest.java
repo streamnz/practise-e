@@ -92,15 +92,44 @@ public class InterviewReadyPlaywrightTest {
         loginPage.submitLogin();
         logTestStep("Login form submitted");
         
-        // Assert - Verify login success (flexible approach for demo)
+        // Wait for login completion and navigation
+        loginPage.waitForLoginCompletion();
+        logTestStep("Login completion wait finished");
+        
+        // Assert - Verify login success
         boolean loginSuccessful = loginPage.isLoginSuccessful();
         if (loginSuccessful) {
-            logTestStep("Login verification passed");
+            logTestStep("Login verification passed - current URL: " + loginPage.getCurrentUrl());
+            
+            // Now click Enter Game to establish WebSocket connection
+            logTestStep("Attempting to click Enter Game button...");
+            try {
+                loginPage.clickEnterGame();
+                logTestStep("Enter Game button clicked successfully");
+                
+                // Wait for game page to load
+                loginPage.waitForGamePageLoad();
+                logTestStep("Game page load completed");
+                
+                // Select "Play as White" to enter the game board
+                logTestStep("Selecting 'Play as White'...");
+                loginPage.selectPlayAsWhite();
+                logTestStep("Play as White selected successfully");
+                
+                // Wait for game board to load
+                loginPage.waitForGameBoard();
+                logTestStep("Game board loaded");
+                
+            } catch (Exception e) {
+                logTestStep("Failed to complete game setup: " + e.getMessage());
+                // Continue with WebSocket test anyway
+            }
         } else {
-            logTestStep("Login verification failed - continuing with WebSocket test");
+            logTestStep("Login verification failed");
         }
         
-        // Act - Check WebSocket connection
+        // Act - Check WebSocket connection (should be established after clicking Enter Game)
+        logTestStep("Checking for WebSocket connection...");
         boolean websocketConnected = webSocketMonitor.waitForConnection(WEBSOCKET_TIMEOUT_MS);
         
         // Assert - Verify WebSocket connection

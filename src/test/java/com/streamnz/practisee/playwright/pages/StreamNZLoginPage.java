@@ -11,12 +11,8 @@ public class StreamNZLoginPage {
     
     private final Page page;
     
-    // Page elements - using constants for maintainability
+    // Page elements
     private static final String LOGIN_BUTTON_SELECTOR = "text=Login";
-    private static final String EMAIL_INPUT_SELECTOR = "input[placeholder='Enter your email']";
-    private static final String PASSWORD_INPUT_SELECTOR = "input[placeholder='Enter your password']";
-    private static final String SUBMIT_BUTTON_SELECTOR = "button:has-text('Login')";
-    private static final String USER_MENU_SELECTOR = ".user-menu, .profile, .account";
     
     public StreamNZLoginPage(Page page) {
         this.page = page;
@@ -59,75 +55,23 @@ public class StreamNZLoginPage {
      * Fill login credentials
      */
     public void fillCredentials(String email, String password) {
-        // Wait for form to be visible
-        page.waitForSelector(EMAIL_INPUT_SELECTOR, 
-            new Page.WaitForSelectorOptions().setTimeout(10000));
-        
-        // Fill email
-        page.fill(EMAIL_INPUT_SELECTOR, email);
-        
-        // Fill password
-        page.fill(PASSWORD_INPUT_SELECTOR, password);
+        page.fill("input[placeholder='Enter your email']", email);
+        page.fill("input[placeholder='Enter your password']", password);
     }
     
     /**
      * Submit login form
      */
     public void submitLogin() {
-        String[] submitSelectors = {
-            SUBMIT_BUTTON_SELECTOR,
-            "button[type='submit']",
-            ".login-submit-btn"
-        };
-        
-        for (String selector : submitSelectors) {
-            try {
-                if (page.isVisible(selector)) {
-                    page.click(selector, new Page.ClickOptions().setForce(true));
-                    return;
-                }
-            } catch (Exception e) {
-                // Try next selector
-            }
-        }
-        
-        throw new RuntimeException("Could not submit login form");
+        page.click("button[type='submit']");
     }
     
     /**
      * Check if login was successful
      */
     public boolean isLoginSuccessful() {
-        // Check if login form disappears
-        try {
-            page.waitForSelector(EMAIL_INPUT_SELECTOR, 
-                new Page.WaitForSelectorOptions()
-                    .setState(WaitForSelectorState.DETACHED)
-                    .setTimeout(5000));
-            return true;
-        } catch (PlaywrightException e) {
-            // Form didn't disappear, check other indicators
-        }
-        
-        // Check for user menu
-        try {
-            page.waitForSelector(USER_MENU_SELECTOR, 
-                new Page.WaitForSelectorOptions().setTimeout(3000));
-            return true;
-        } catch (PlaywrightException e) {
-            // No user menu found
-        }
-        
-        // Check for success messages
-        try {
-            page.waitForSelector(".success, .alert-success, .login-success", 
-                new Page.WaitForSelectorOptions().setTimeout(2000));
-            return true;
-        } catch (PlaywrightException e) {
-            // No success message found
-        }
-        
-        return false;
+        page.waitForTimeout(2000);
+        return !page.url().contains("login");
     }
     
     /**
@@ -142,5 +86,48 @@ public class StreamNZLoginPage {
      */
     public String getCurrentUrl() {
         return page.url();
+    }
+    
+    /**
+     * Wait for login to complete
+     */
+    public void waitForLoginCompletion() {
+        page.waitForTimeout(3000);
+    }
+    
+    
+    /**
+     * Click Enter Game button
+     */
+    public void clickEnterGame() {
+        page.click("text=Enter Game");
+    }
+    
+    /**
+     * Wait for game page to load
+     */
+    public void waitForGamePageLoad() {
+        page.waitForTimeout(2000);
+    }
+    
+    /**
+     * Select "Play as White" button to enter the game board
+     */
+    public void selectPlayAsWhite() {
+        page.click("button:has-text('Play as White')");
+    }
+    
+    /**
+     * Select "Play as Black" button to enter the game board
+     */
+    public void selectPlayAsBlack() {
+        page.click("button:has-text('Play as Black')");
+    }
+    
+    /**
+     * Wait for game board to load
+     */
+    public void waitForGameBoard() {
+        page.waitForTimeout(3000);
     }
 }
